@@ -16,15 +16,48 @@ local DIRECTIONS = {'n', 's', 'e', 'w'}
 
 local PathFinding = torch.class('babi.PathFinding', 'babi.Task', babi)
 
+function col_to_name(col_num)
+
+  local col_str      = nil
+  local col_num_orig = col_num
+  local char_A = string.byte("A")
+  if not col_str then
+    col_str = ""
+    col_num = col_num + 1
+
+    while col_num > 0 do
+      -- Set remainder from 1 .. 26
+      local remainder = col_num % 26
+      if remainder == 0 then remainder = 26 end
+
+      -- Convert the remainder to a character.
+      local col_letter = string.char(char_A + remainder - 1)
+
+      -- Accumulate the column letters, right to left.
+      col_str = col_letter .. col_str
+
+      -- Get the next order of magnitude.
+      col_num = math.floor((col_num - 1) / 26)
+    end
+  end
+
+  return col_str
+end
+
 function PathFinding:new_world()
     local world = babi.World()
     local locations = List()
-    for i, option in ipairs{'bedroom', 'bathroom', 'kitchen',
-                            'office', 'garden', 'hallway'} do
+    local _locations = {}
+    local num_locations = 20
+    for i=1,num_locations do
+      local loc = col_to_name(i-1)
+      _locations[i]=loc
+    end
+    for i, option in ipairs(_locations) do
         local location = world:create_entity(option, {is_location = true})
         locations:append(location)
     end
-    self.locations = utilities.choice(locations, 6)
+    self.locations = utilities.choice(locations, num_locations)
     return world
 end
 
